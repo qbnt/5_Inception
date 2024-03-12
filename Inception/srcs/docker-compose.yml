@@ -1,0 +1,60 @@
+version: "3.8"
+
+networks:
+  LeNetwork:
+    name: LeNetwork
+
+services:
+
+  MariaDB:
+    container_name: mariadb_inception
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+    networks:
+      - LeNetwork
+    image: mariadb_inception
+    env_file:
+      - .env
+    volumes:
+      - dbData:/var/lib/mysql
+    restart: always
+
+  wordpress:
+    container_name: wordpress_inception
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+    image: wordpress_inception
+    depends_on:
+      - MariaDB
+    networks:
+      - LeNetwork
+    env_file:
+      - .env
+    volumes:
+      - wpData:/var/www/html
+    restart: always
+
+  nginx:
+    container_name: nginx_inception
+    build:
+      context: ./requirements/nginx
+      dockerfile: Dockerfile
+    image: nginx_inception
+    depends_on:
+      - MariaDB
+      - wordpress
+    networks:
+      - LeNetwork
+    env_file:
+      - .env
+    volumes:
+      - wpData:/var/www/html
+    ports:
+      - 8443:443
+    restart: always
+
+volumes:
+  dbData:
+  wpData:
