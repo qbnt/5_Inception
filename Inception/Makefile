@@ -6,37 +6,46 @@
 #    By: qbanet <qbanet@student.42perpignan.fr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/02 10:18:05 by qbanet            #+#    #+#              #
-#    Updated: 2024/03/12 14:07:15 by qbanet           ###   ########.fr        #
+#    Updated: 2024/03/12 19:48:52 by qbanet           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-all : build
+NAME = inception
+CONFIGS_FOLDER = ./srcs/requirements
+COMPOSE_FILE = ./srcs/docker-compose.yml
+ENV = ./srcs/.env
+BASEYML = ./srcs/tools/base.yml
+LOGIN = $(shell whoami)
 
-build :
-	@sudo hostsed add 127.0.0.1 qbanet.42.fr && echo "\033[1;32m~|ADD qbanet.42.fr to /etc/hosts|~\033[0m"
-	@docker-compose -f ./srcs/docker-compose.yml up -d
+all: build run
 
-down :
-	@sudo hostsed rm 127.0.0.1 qbanet.42.fr && echo "\033[1;31m~|DELETE qbanet.42.fr from /etc/hosts|~\033[0m"
-	@docker-compose -f ./srcs/docker-compose.yml down
+# Build the docker images in the docker-compose.yml file
+build:
+	mkdir -p ~/data/mariadb
+	mkdir -p ~/data/wordpress
+	sudo docker-compose -f $(COMPOSE_FILE) build
+	@echo "\n\nInception is ready to be launched."
 
-stop :
-	@docker-compose -f ./srcs/docker-compose.yml stop
+# Run the docker containers in the docker-compose.yml file
+run:
+	sudo docker-compose -f $(COMPOSE_FILE) up -d
+	@echo "\n\nInception is now running on https://qbanet.42.fr."
 
-start :
-	@docker-compose -f ./srcs/docker-compose.yml start
+stop:
+	sudo docker-compose -f $(COMPOSE_FILE) stop
 
-status :
-	@docker ps
+# Launch the tests
+test: build run
 
-delete : down
-	@docker image rm wordpress -f
-	@docker image rm mariadb -f
-	@docker image rm nginx -f
-	@docker volume rm mariadb
-	@docker volume rm wordpress && echo "\033[1;33m~| Nettoyage des images/containers/volumes de Docker : OK |~\033[0m"\
+# Stop and remove the docker containers
+clean: stop
+	sudo docker-compose -f $(COMPOSE_FILE) down -v
 
-prune :
-	@sudo rm -rf /home/user/docker/_data/wordpress/*
-	@sudo rm -rf /home/user/docker/_data/mariadb/*
-	@docker system prune -af && echo "\033[1;33m~| Nettoyage du cache de Docker : OK |~\033[0m"\
+# Remove the docker images
+fclean: clean
+	@if [ -n "$$(sudo docker ps -a -q)" ]; then sudo docker rm -f $$(sudo docker ps -a -q); fi
+	@if [ -n "$$(sudo docker images -q)" ]; then sudo docker rmi -f $$(sudo docker images -q); fi
+	@if [ -n "$$(sudo docker volume ls -q)" ]; then sudo docker volume prune -f; fi
+	sudo rm -rf ~/data/*
+
+re: fclean all

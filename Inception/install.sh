@@ -1,27 +1,27 @@
 #!/bin/bash
 
-if [ -d "/home/user/data" ]; then \
+if [ -d "/home/parallels/data" ]; then \
 	echo "/data directory already exists"; else \
-	mkdir /home/user/data; \
+	mkdir /home/parallels/data; \
 fi
 
-if [ -d "/home/user/data/wordpress" ]; then \
+if [ -d "/home/parallels/data/wordpress" ]; then \
 	echo "/data/wordpress already exists"; else \
-	mkdir /home/user/data/wordpress; \
+	mkdir /home/parallels/data/wordpress; \
 fi
 
-if [ -d "/home/user/data/mariadb" ]; then \
+if [ -d "/home/user/parallels/mariadb" ]; then \
 	echo "/data/mariadb already exists"; else \
-	mkdir /home/user/data/mariadb; \
+	mkdir /home/parallels/data/mariadb; \
 fi
 
-sudo brew update
-sudo brew upgrade -y
-sudo brew install make curl lsb-release ca-certificates apt-transport-https software-properties-common hostsed -y
+sudo apt-get update
+sudo apt-get upgrade -y
+sudo apt-get install make curl lsb-release ca-certificates apt-transport-https software-properties-common hostsed -y
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo brew update
-sudo brew install docker-ce -y
-sudo brew update
-sudo brew install docker-compose docker-compose-plugin -y
-sudo brew update
+sudo apt-get update
+sudo apt-get install docker-ce -y
+sudo apt-get update
+sudo apt-get install docker-compose docker-compose-plugin -y
+sudo apt-get update

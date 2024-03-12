@@ -1,60 +1,74 @@
-version: "3.8"
-
-networks:
-  LeNetwork:
-    name: LeNetwork
+version: '3' # Version de Docker Compose utilisée
 
 services:
-
-  MariaDB:
-    container_name: mariadb_inception
+  mariadb:
+    container_name: mariadb
+    networks:
+      - inception
     build:
       context: ./requirements/mariadb
       dockerfile: Dockerfile
-    networks:
-      - LeNetwork
-    image: mariadb_inception
-    env_file:
-      - .env
+    image: mariadb
+    env_file: .env
     volumes:
-      - dbData:/var/lib/mysql
-    restart: always
-
-  wordpress:
-    container_name: wordpress_inception
-    build:
-      context: ./requirements/wordpress
-      dockerfile: Dockerfile
-    image: wordpress_inception
-    depends_on:
-      - MariaDB
-    networks:
-      - LeNetwork
-    env_file:
-      - .env
-    volumes:
-      - wpData:/var/www/html
-    restart: always
+      - mariadb_data:/var/lib/mysql
+    restart: on-failure
+    expose:
+      - "3306"
+    # Configuration du service MariaDB
 
   nginx:
-    container_name: nginx_inception
+    container_name: nginx
+    networks:
+      - inception
     build:
       context: ./requirements/nginx
       dockerfile: Dockerfile
-    image: nginx_inception
-    depends_on:
-      - MariaDB
-      - wordpress
-    networks:
-      - LeNetwork
-    env_file:
-      - .env
+    image: nginx
+    env_file: .env
     volumes:
-      - wpData:/var/www/html
+      - wordpress_data:/var/www/wordpress
+    depends_on:
+      - wordpress
     ports:
-      - 8443:443
-    restart: always
+      - "443:443"
+    restart: on-failure
+    # Configuration du service Nginx
+
+  wordpress:
+    container_name: wordpress
+    networks:
+      - inception
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+    image: wordpress
+    env_file: .env
+    volumes:
+      - wordpress_data:/var/www/wordpress
+    depends_on:
+      - mariadb
+    restart: on-failure
+    expose:
+      - "9000"
+    # Configuration du service WordPress
+
+networks:
+  inception:
+    driver: bridge
+    # Définition d'un réseau nommé "inception" avec le pilote de réseau "bridge"
 
 volumes:
-  dbData:
-  wpData:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      device: '/home/parallels/data/mariadb'
+      o: 'bind'
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      device: '/home/parallels/data/wordpress'
+      o: 'bind'
+    # Création de volumes persistants pour stocker les données de MariaDB et de WordPress
