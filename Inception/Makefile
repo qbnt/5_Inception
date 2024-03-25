@@ -6,7 +6,7 @@
 #    By: qbanet <qbanet@student.42perpignan.fr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/02 10:18:05 by qbanet            #+#    #+#              #
-#    Updated: 2024/03/12 19:48:52 by qbanet           ###   ########.fr        #
+#    Updated: 2024/03/25 09:53:23 by qbanet           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,35 +17,31 @@ ENV = ./srcs/.env
 BASEYML = ./srcs/tools/base.yml
 LOGIN = $(shell whoami)
 
-all: build run
+all: build start
 
-# Build the docker images in the docker-compose.yml file
 build:
 	mkdir -p ~/data/mariadb
 	mkdir -p ~/data/wordpress
 	sudo docker-compose -f $(COMPOSE_FILE) build
 	@echo "\n\nInception is ready to be launched."
 
-# Run the docker containers in the docker-compose.yml file
-run:
+start:
 	sudo docker-compose -f $(COMPOSE_FILE) up -d
 	@echo "\n\nInception is now running on https://qbanet.42.fr."
 
 stop:
 	sudo docker-compose -f $(COMPOSE_FILE) stop
 
-# Launch the tests
-test: build run
-
-# Stop and remove the docker containers
 clean: stop
 	sudo docker-compose -f $(COMPOSE_FILE) down -v
 
-# Remove the docker images
 fclean: clean
 	@if [ -n "$$(sudo docker ps -a -q)" ]; then sudo docker rm -f $$(sudo docker ps -a -q); fi
 	@if [ -n "$$(sudo docker images -q)" ]; then sudo docker rmi -f $$(sudo docker images -q); fi
 	@if [ -n "$$(sudo docker volume ls -q)" ]; then sudo docker volume prune -f; fi
 	sudo rm -rf ~/data/*
+
+prune:
+	@docker system prune -a
 
 re: fclean all
