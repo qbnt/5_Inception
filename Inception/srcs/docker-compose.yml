@@ -1,10 +1,10 @@
-version: '3' # Version de Docker Compose utilisée
+version: '3'
 
 services:
   mariadb:
     container_name: mariadb
     networks:
-      - inception
+      - LeNetwork
     build:
       context: ./requirements/mariadb
       dockerfile: Dockerfile
@@ -15,30 +15,11 @@ services:
     restart: on-failure
     expose:
       - "3306"
-    # Configuration du service MariaDB
-
-  nginx:
-    container_name: nginx
-    networks:
-      - inception
-    build:
-      context: ./requirements/nginx
-      dockerfile: Dockerfile
-    image: nginx
-    env_file: .env
-    volumes:
-      - wordpress_data:/var/www/wordpress
-    depends_on:
-      - wordpress
-    ports:
-      - "443:443"
-    restart: on-failure
-    # Configuration du service Nginx
 
   wordpress:
     container_name: wordpress
     networks:
-      - inception
+      - LeNetwork
     build:
       context: ./requirements/wordpress
       dockerfile: Dockerfile
@@ -51,12 +32,27 @@ services:
     restart: on-failure
     expose:
       - "9000"
-    # Configuration du service WordPress
+
+  nginx:
+    container_name: nginx
+    networks:
+      - LeNetwork
+    build:
+      context: ./requirements/nginx
+      dockerfile: Dockerfile
+    image: nginx
+    env_file: .env
+    volumes:
+      - wordpress_data:/var/www/wordpress
+    depends_on:
+      - wordpress
+    ports:
+      - "443:443"
+    restart: on-failure
 
 networks:
-  inception:
+  LeNetwork:
     driver: bridge
-    # Définition d'un réseau nommé "inception" avec le pilote de réseau "bridge"
 
 volumes:
   mariadb_data:
@@ -71,4 +67,3 @@ volumes:
       type: 'none'
       device: '/home/parallels/data/wordpress'
       o: 'bind'
-    # Création de volumes persistants pour stocker les données de MariaDB et de WordPress
