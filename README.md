@@ -30,7 +30,7 @@ Each service must run in its own container and communicate over a private Docker
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/qbnt/4_Inception.git
+git clone https://github.com/qbnt/5_Inception.git
 cd 4_Inception
 ```
 
